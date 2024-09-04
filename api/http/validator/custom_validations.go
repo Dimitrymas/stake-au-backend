@@ -5,9 +5,34 @@ import (
 	"regexp"
 )
 
-// ValidatePassword checks password complexity
-func ValidatePassword(fl validator.FieldLevel) bool {
+// Regular expressions for different password validations
+var (
+	lowercaseRegex   = regexp.MustCompile(`[a-z]`)
+	uppercaseRegex   = regexp.MustCompile(`[A-Z]`)
+	digitRegex       = regexp.MustCompile(`\d`)
+	specialCharRegex = regexp.MustCompile(`[\W_]`)
+)
+
+// ValidateLowercase Validate lowercase letter
+func ValidateLowercase(fl validator.FieldLevel) bool {
 	password := fl.Field().String()
-	var passwordRegex = regexp.MustCompile(`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,20}$`)
-	return passwordRegex.MatchString(password)
+	return lowercaseRegex.MatchString(password)
+}
+
+// ValidateUppercase checks for at least one uppercase letter
+func ValidateUppercase(fl validator.FieldLevel) bool {
+	password := fl.Field().String()
+	return uppercaseRegex.MatchString(password)
+}
+
+// ValidateDigit checks for at least one digit
+func ValidateDigit(fl validator.FieldLevel) bool {
+	password := fl.Field().String()
+	return digitRegex.MatchString(password)
+}
+
+// ValidateSpecialChar checks for at least one special character
+func ValidateSpecialChar(fl validator.FieldLevel) bool {
+	password := fl.Field().String()
+	return specialCharRegex.MatchString(password)
 }

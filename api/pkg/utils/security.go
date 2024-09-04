@@ -8,7 +8,7 @@ import (
 )
 
 func OxapaySign(callback []byte) string {
-	hmacObj := hmac.New(sha512.New, []byte(config.s.OxapayMerchantApiKey))
+	hmacObj := hmac.New(sha512.New, []byte(config.S.OxapayMerchantApiKey))
 	hmacObj.Write(callback)
 	return hex.EncodeToString(hmacObj.Sum(nil))
 }

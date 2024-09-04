@@ -1,17 +1,19 @@
 package user
 
 import (
+	"backend/api/pkg/customerrors"
 	"backend/api/pkg/models"
 	"backend/api/pkg/utils"
 	"context"
+	"errors"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Repository interface {
-	Register(
-		login string,
-		hashedPassword string,
-	) error
+	Register(ctx context.Context, login string, hashedPassword string) (primitive.ObjectID, error)
+	GetByLogin(ctx context.Context, login string) (*models.User, error)
 }
 
 type repository struct {
@@ -25,9 +27,10 @@ func NewRepository(collection *mongo.Collection) Repository {
 }
 
 func (r *repository) Register(
+	ctx context.Context,
 	login string,
 	hashedPassword string,
-) error {
+) (primitive.ObjectID, error) {
 	user := models.User{
 		Login:          login,
 		HashedPassword: hashedPassword,
@@ -36,6 +39,35 @@ func (r *repository) Register(
 		MaxAccounts:    0,
 		CreatedAt:      utils.GetDateTime(),
 	}
-	_, err := r.collection.InsertOne(context.Background(), user)
-	return err
+	// Выполняем вставку нового пользователя
+	result, err := r.collection.InsertOne(ctx, user)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	objectID, ok := result.InsertedID.(primitive.ObjectID)
+	if !ok {
+		return primitive.NilObjectID, err
+	}
+
+	return objectID, nil
+}
+
+func (r *repository) GetByLogin(ctx context.Context, login string) (*models.User, error) {
+	var user models.User
+	filter := bson.M{"login": login}
+	err := r.collection.FindOne(ctx, filter).Decode(&user)
+
+	// Обработка ошибки, если документ не найден
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return nil, customerrors.ErrUserNotFound
+	}
+
+	// Возвращаем ошибку, если возникла другая ошибка
+	if err != nil {
+		return nil, err
+	}
+
+	// Возвращаем пользователя и nil в случае успеха
+	return &user, nil
 }

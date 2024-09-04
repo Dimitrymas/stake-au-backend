@@ -2,7 +2,7 @@ package models
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
-type Promocode struct {
+type PromoCode struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty"` // Уникальный идентификатор промокода в базе
 	Name        string             `bson:"name"`          // Название промокода
 	Value       float64            `bson:"value"`         // Значение промокода

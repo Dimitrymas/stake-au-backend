@@ -2,6 +2,7 @@ package user
 
 import (
 	"backend/api/http/requests/userrequests"
+	"backend/api/http/responses"
 	validation "backend/api/http/validator"
 	userPkg "backend/api/pkg/user"
 	"github.com/gofiber/fiber/v2"
@@ -22,7 +23,11 @@ func (h *commonHandler) Register(ctx *fiber.Ctx) error {
 	}
 	if err := validation.ValidateStruct(&data); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(
-			responses.GlobalBadRequestWithDetails(validation.TranslateError(err)),
+			responses.GlobalBadRequest(
+				validation.HandleValidationError(err),
+			),
 		)
 	}
+
+	token, err := h.service.Register(ctx.Context(), data.Login, data.Password)
 }
