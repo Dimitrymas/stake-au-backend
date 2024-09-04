@@ -4,6 +4,7 @@ import (
 	"backend/api/pkg/config"
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type JWTClaims struct {
@@ -11,6 +12,7 @@ type JWTClaims struct {
 	jwt.StandardClaims
 }
 
+// DecodeJWT Функция для декодирования JWT
 func DecodeJWT(tokenString string) (*JWTClaims, error) {
 	var claims JWTClaims
 	_, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
@@ -22,6 +24,7 @@ func DecodeJWT(tokenString string) (*JWTClaims, error) {
 	return &claims, nil
 }
 
+// EncodeJWT Функция для кодирования JWT
 func EncodeJWT(userId primitive.ObjectID) (string, error) {
 	claims := JWTClaims{
 		UserId:         userId.Hex(),
@@ -31,10 +34,28 @@ func EncodeJWT(userId primitive.ObjectID) (string, error) {
 	return token.SignedString(config.S.JwtSecret)
 }
 
+// GetUserIdFromToken Функция для получения ID пользователя из JWT
 func GetUserIdFromToken(tokenString string) (primitive.ObjectID, error) {
 	claims, err := DecodeJWT(tokenString)
 	if err != nil {
 		return primitive.NilObjectID, err
 	}
 	return primitive.ObjectIDFromHex(claims.UserId)
+}
+
+// HashPassword Функция для хэширования пароля
+func HashPassword(password string) (string, error) {
+	// Хэшируем пароль с использованием bcrypt и параметра cost
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
+}
+
+// CheckPasswordHash Функция для проверки пароля
+func CheckPasswordHash(password, hash string) bool {
+	// Сравниваем пароль с хэшем
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }

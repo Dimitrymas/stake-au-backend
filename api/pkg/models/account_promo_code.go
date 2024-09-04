@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-type AccountPromocode struct {
+type AccountPromoCode struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty"` // Уникальный идентификатор пользователя в базе
 	AccountID   primitive.ObjectID `bson:"account_id"`    // ID аккаунта
-	PromocodeID primitive.ObjectID `bson:"promocode_id"`  // ID промокода
+	PromoCodeID primitive.ObjectID `bson:"promocode_id"`  // ID промокода
 	Succeeded   bool               `bson:"succeeded"`     // Промокод успешно применен
 	Duration    time.Duration      `bson:"duration"`      // Время активации промокода
 	Error       string             `bson:"error"`         // Ошибка при активации промокода
