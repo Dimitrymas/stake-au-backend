@@ -7,7 +7,7 @@ import (
 )
 
 // HandleValidationError converts validation errors to a readable format
-func HandleValidationError(err error) *map[string]string {
+func HandleValidationError(err error) map[string]string {
 	if err == nil {
 		return nil
 	}
@@ -43,5 +43,5 @@ func HandleValidationError(err error) *map[string]string {
 		}
 	}
 
-	return &validationErrors
+	return validationErrors
 }

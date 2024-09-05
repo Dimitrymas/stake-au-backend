@@ -5,4 +5,5 @@ import "errors"
 var (
 	ErrPasswordIncorrect = errors.New("password is incorrect")
 	ErrUserNotFound      = errors.New("user not found")
+	ErrUserAlreadyExists = errors.New("user already exists")
 )

@@ -6,6 +6,7 @@ import (
 
 type Account struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty"` // Уникальный идентификатор пользователя в базе
+	UserID     primitive.ObjectID `bson:"user_id"`       // Уникальный идентификатор пользователя в базе
 	Token      string             `bson:"token"`         // Токен пользователя
 	ProxyType  string             `bson:"proxy_type"`    // Тип прокси
 	ProxyLogin string             `bson:"proxy_login"`   // Логин прокси

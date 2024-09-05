@@ -14,6 +14,7 @@ import (
 type Repository interface {
 	Register(ctx context.Context, login string, hashedPassword string) (primitive.ObjectID, error)
 	GetByLogin(ctx context.Context, login string) (*models.User, error)
+	GetByID(ctx context.Context, id primitive.ObjectID) (*models.User, error)
 }
 
 type repository struct {
@@ -70,4 +71,16 @@ func (r *repository) GetByLogin(ctx context.Context, login string) (*models.User
 
 	// Возвращаем пользователя и nil в случае успеха
 	return &user, nil
+}
+
+func (r *repository) GetByID(ctx context.Context, id primitive.ObjectID) (*models.User, error) {
+	var user models.User
+	filter := bson.M{"_id": id}
+	err := r.collection.FindOne(ctx, filter).Decode(&user)
+
+	// Обработка ошибки, если документ не найден
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return nil, customerrors.ErrUserNotFound
+	}
+	return &user, err
 }

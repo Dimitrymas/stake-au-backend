@@ -2,7 +2,14 @@ package responses
 
 import "github.com/gofiber/fiber/v2"
 
-func GlobalBadRequest(errors *map[string]string) *fiber.Map {
+func BadRequest() *fiber.Map {
+	return &fiber.Map{
+		"success": false,
+		"error":   "Bad Request",
+	}
+}
+
+func BadRequestWithErrors(errors map[string]string) *fiber.Map {
 	return &fiber.Map{
 		"success": false,
 		"error":   "Bad Request",
@@ -10,9 +17,16 @@ func GlobalBadRequest(errors *map[string]string) *fiber.Map {
 	}
 }
 
-func GlobalInternalError() *fiber.Map {
+func InternalError() *fiber.Map {
 	return &fiber.Map{
 		"success": false,
 		"error":   "Internal Server Error",
+	}
+}
+
+func Unauthorized() *fiber.Map {
+	return &fiber.Map{
+		"success": false,
+		"error":   "Unauthorized",
 	}
 }

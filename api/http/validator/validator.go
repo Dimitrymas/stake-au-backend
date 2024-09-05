@@ -8,7 +8,7 @@ import (
 var validate *validator.Validate
 
 // InitValidator initializes the validator
-func InitValidator() {
+func init() {
 	validate = validator.New()
 
 	// Register custom validations here if needed

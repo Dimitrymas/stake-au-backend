@@ -1,6 +1,11 @@
 package userrequests
 
-type RegisterRequest struct {
+type Register struct {
+	Login    string `json:"login" validate:"required,min=5,max=14,alphanum"`
+	Password string `json:"password" validate:"required,min=8,max=20,lowercase,uppercase,digit,specialchar"`
+}
+
+type Login struct {
 	Login    string `json:"login" validate:"required,min=5,max=14,alphanum"`
 	Password string `json:"password" validate:"required,min=8,max=20,lowercase,uppercase,digit,specialchar"`
 }
