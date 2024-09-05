@@ -1,10 +1,14 @@
 package accountrequests
 
 type Create struct {
-	Token      string `json:"token" validate:"required"`
-	ProxyType  string `json:"proxy_type" validate:""`
-	ProxyLogin string `json:"proxy_login" validate:""`
-	ProxyPass  string `json:"proxy_pass" validate:""`
-	ProxyIP    string `json:"proxy_ip" validate:""`
-	ProxyPort  string `json:"proxy_port" validate:""`
+	Token      string `json:"token" validate:"required"`                                                       // Обязательно
+	ProxyType  string `json:"proxy_type" validate:"omitempty,oneof=http socks5"`                               // Должно быть либо "http", либо "socks5", если указано
+	ProxyLogin string `json:"proxy_login" validate:"omitempty,required_with=ProxyType"`                        // Обязательно, если указан ProxyType
+	ProxyPass  string `json:"proxy_pass" validate:"omitempty,required_with=ProxyLogin"`                        // Обязательно, если указан ProxyLogin
+	ProxyIP    string `json:"proxy_ip" validate:"omitempty,required_with=ProxyType,ip"`                        // Должен быть валидным IP-адресом, если указан ProxyType
+	ProxyPort  string `json:"proxy_port" validate:"omitempty,required_with=ProxyType,numeric,min=1,max=65535"` // Валидный порт, если указан ProxyType
+}
+
+type CreateMany struct {
+	Accounts []*Create `json:"accounts" validate:"required,dive"`
 }

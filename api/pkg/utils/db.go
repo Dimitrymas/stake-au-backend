@@ -12,7 +12,7 @@ import (
 
 func DatabaseConnection() (*mongo.Database, context.CancelFunc, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	url := config.s.GetDbUrl()
+	url := config.S.GetDbUrl()
 	log.Println("Connecting to database")
 
 	opts := options.Client().ApplyURI(url).SetServerSelectionTimeout(5 * time.Second)
@@ -31,7 +31,7 @@ func DatabaseConnection() (*mongo.Database, context.CancelFunc, error) {
 		return nil, nil, err
 	}
 
-	db := client.Database(config.s.DbName)
+	db := client.Database(config.S.DbName)
 	return db, cancel, nil
 }
 

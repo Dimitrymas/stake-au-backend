@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type AccountPromoCode struct {
+type Activation struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty"` // Уникальный идентификатор пользователя в базе
 	AccountID   primitive.ObjectID `bson:"account_id"`    // ID аккаунта
 	PromoCodeID primitive.ObjectID `bson:"promocode_id"`  // ID промокода

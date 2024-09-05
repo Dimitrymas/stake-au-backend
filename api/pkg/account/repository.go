@@ -1,6 +1,7 @@
 package account
 
 import (
+	"backend/api/http/requests/accountrequests"
 	"backend/api/pkg/models"
 	"backend/api/pkg/utils"
 	"context"
@@ -13,15 +14,15 @@ type Repository interface {
 	Create(
 		ctx context.Context,
 		userID primitive.ObjectID,
-		token string,
-		proxyType string,
-		proxyLogin string,
-		proxyPass string,
-		proxyIP string,
-		proxyPort string,
+		account *accountrequests.Create,
 	) error
-	GetAllByUserID(ctx context.Context, userID primitive.ObjectID) ([]*models.Account, error)
+	GetByUserID(ctx context.Context, userID primitive.ObjectID) ([]*models.Account, error)
 	CountByUserID(ctx context.Context, userID primitive.ObjectID) (int, error)
+	CreateMany(
+		ctx context.Context,
+		userID primitive.ObjectID,
+		accounts []*accountrequests.Create,
+	) error
 }
 
 type repository struct {
@@ -37,21 +38,16 @@ func NewRepository(collection *mongo.Collection) Repository {
 func (r *repository) Create(
 	ctx context.Context,
 	userID primitive.ObjectID,
-	token string,
-	proxyType string,
-	proxyLogin string,
-	proxyPass string,
-	proxyIP string,
-	proxyPort string,
+	requestData *accountrequests.Create,
 ) error {
 	account := models.Account{
 		UserID:     userID,
-		Token:      token,
-		ProxyType:  proxyType,
-		ProxyLogin: proxyLogin,
-		ProxyPass:  proxyPass,
-		ProxyIP:    proxyIP,
-		ProxyPort:  proxyPort,
+		Token:      requestData.Token,
+		ProxyType:  requestData.ProxyType,
+		ProxyLogin: requestData.ProxyLogin,
+		ProxyPass:  requestData.ProxyPass,
+		ProxyIP:    requestData.ProxyIP,
+		ProxyPort:  requestData.ProxyPort,
 		CreatedAt:  utils.GetDateTime(),
 	}
 	// Выполняем вставку нового пользователя
@@ -60,7 +56,7 @@ func (r *repository) Create(
 	return err
 }
 
-func (r *repository) GetAllByUserID(ctx context.Context, userID primitive.ObjectID) ([]*models.Account, error) {
+func (r *repository) GetByUserID(ctx context.Context, userID primitive.ObjectID) ([]*models.Account, error) {
 	filter := bson.M{"user_id": userID}
 	cursor, err := r.collection.Find(ctx, filter)
 	if err != nil {
@@ -76,4 +72,28 @@ func (r *repository) CountByUserID(ctx context.Context, userID primitive.ObjectI
 	filter := bson.M{"user_id": userID}
 	count, err := r.collection.CountDocuments(ctx, filter)
 	return int(count), err
+}
+
+func (r *repository) CreateMany(
+	ctx context.Context,
+	userID primitive.ObjectID,
+	accounts []*accountrequests.Create,
+) error {
+	var accountsData []interface{}
+	for _, account := range accounts {
+		accountsData = append(accountsData, models.Account{
+			UserID:     userID,
+			Token:      account.Token,
+			ProxyType:  account.ProxyType,
+			ProxyLogin: account.ProxyLogin,
+			ProxyPass:  account.ProxyPass,
+			ProxyIP:    account.ProxyIP,
+			ProxyPort:  account.ProxyPort,
+			CreatedAt:  utils.GetDateTime(),
+		})
+	}
+	// Выполняем вставку новых аккаунтов
+	_, err := r.collection.InsertMany(ctx, accountsData)
+
+	return err
 }

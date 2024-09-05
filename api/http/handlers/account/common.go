@@ -31,12 +31,7 @@ func (h *commonHandler) Create(ctx *fiber.Ctx) error {
 	err := h.accountService.Create(
 		ctx.Context(),
 		userID,
-		data.Token,
-		data.ProxyType,
-		data.ProxyLogin,
-		data.ProxyPass,
-		data.ProxyIP,
-		data.ProxyPort,
+		data,
 	)
 	switch {
 	case err == nil:
@@ -45,6 +40,44 @@ func (h *commonHandler) Create(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusForbidden).JSON(accountresponses.SubNotActive())
 	case errors.Is(err, customerrors.ErrAccountsLimit):
 		return ctx.Status(fiber.StatusForbidden).JSON(accountresponses.AccountsLimit())
+	default:
+		return err
+	}
+}
+
+func (h *commonHandler) Get(ctx *fiber.Ctx) error {
+	userID := ctx.Locals("userID").(primitive.ObjectID)
+
+	accounts, err := h.accountService.GetByUserID(ctx.Context(), userID)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(accountresponses.Get(accounts))
+}
+
+func (h *commonHandler) CreateMany(ctx *fiber.Ctx) error {
+	userID := ctx.Locals("userID").(primitive.ObjectID)
+
+	data, validationErr := validation.ParseAndValidate[accountrequests.CreateMany](ctx)
+	if validationErr {
+		return nil
+	}
+
+	err := h.accountService.CreateMany(
+		ctx.Context(),
+		userID,
+		data.Accounts,
+	)
+
+	switch {
+	case err == nil:
+		return ctx.JSON(accountresponses.CreatedMany(""))
+	case errors.Is(err, customerrors.ErrSubNotActive):
+		return ctx.Status(fiber.StatusForbidden).JSON(accountresponses.SubNotActive())
+	case errors.Is(err, customerrors.ErrAccountsLimit):
+		return ctx.Status(fiber.StatusForbidden).JSON(accountresponses.AccountsLimit())
+	case errors.Is(err, customerrors.ErrCreatePartialAccounts):
+		return ctx.Status(fiber.StatusForbidden).JSON(accountresponses.CreatedMany(err.Error()))
 	default:
 		return err
 	}
