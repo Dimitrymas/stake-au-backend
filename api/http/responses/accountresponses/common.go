@@ -21,13 +21,13 @@ func CreatedMany(warning string) fiber.Map {
 
 func AccountsLimit() fiber.Map {
 	return fiber.Map{
-		"message": "Accounts limit reached",
+		"error": "Accounts limit reached",
 	}
 }
 
 func SubNotActive() fiber.Map {
 	return fiber.Map{
-		"message": "Subscription is not active",
+		"error": "Subscription is not active",
 	}
 }
 
@@ -49,12 +49,20 @@ func Get(accounts []*models.Account) fiber.Map {
 	for _, account := range accounts {
 		result = append(result, GetAccount(account))
 	}
-	sign, errResponse := utils.SignData(result)
-	if errResponse != nil {
-		return errResponse
-	}
-	return fiber.Map{
+	data := fiber.Map{
 		"accounts": result,
-		"sign":     sign,
+	}
+	return utils.SignData(data)
+}
+
+func NotFound() fiber.Map {
+	return fiber.Map{
+		"error": "Account not found",
+	}
+}
+
+func Edited() fiber.Map {
+	return fiber.Map{
+		"message": "Account edited",
 	}
 }

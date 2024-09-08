@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	ErrSubNotActive          = errors.New("subscription is not active")
 	ErrAccountsLimit         = errors.New("maximum number of accounts reached")
 	ErrCreatePartialAccounts = errors.New("partial accounts creation")
+	ErrAccountNotFound       = errors.New("account not found")
 )
 
 type partialAccountsError struct {

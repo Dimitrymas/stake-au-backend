@@ -10,8 +10,8 @@ import (
 )
 
 type Service interface {
-	Register(ctx context.Context, login string, password string) (string, error)
-	Login(ctx context.Context, login string, password string) (string, error)
+	Register(ctx context.Context, mnemonic []string) (string, error)
+	Login(ctx context.Context, mnemonic []string) (string, error)
 	GetByID(ctx context.Context, id primitive.ObjectID) (*models.User, error)
 }
 
@@ -27,20 +27,18 @@ func NewService(
 	}
 }
 
-func (s *service) Register(ctx context.Context, login string, password string) (string, error) {
-	_, err := s.repo.GetByLogin(ctx, login)
+func (s *service) Register(ctx context.Context, mnemonic []string) (string, error) {
+	if utils.ValidateMnemonic(mnemonic) {
+		return "", customerrors.ErrInvalidMnemonic
+	}
+	seed := utils.MnemonicToSeed(mnemonic)
+	_, err := s.repo.GetBySeed(ctx, seed)
 	if err == nil {
 		return "", customerrors.ErrUserAlreadyExists
 	} else if !errors.Is(err, customerrors.ErrUserNotFound) {
 		return "", err
 	}
-
-	hashedPassword, err := utils.HashPassword(password)
-	if err != nil {
-		return "", err
-	}
-
-	userID, err := s.repo.Register(ctx, login, hashedPassword)
+	userID, err := s.repo.Register(ctx, seed)
 	if err != nil {
 		return "", err
 	}
@@ -48,17 +46,15 @@ func (s *service) Register(ctx context.Context, login string, password string) (
 	return utils.EncodeJWT(userID)
 }
 
-func (s *service) Login(ctx context.Context, login string, password string) (string, error) {
-	user, err := s.repo.GetByLogin(ctx, login)
+func (s *service) Login(ctx context.Context, mnemonic []string) (string, error) {
+	if utils.ValidateMnemonic(mnemonic) {
+		return "", customerrors.ErrInvalidMnemonic
+	}
+	seed := utils.MnemonicToSeed(mnemonic)
+	user, err := s.repo.GetBySeed(ctx, seed)
 	if err != nil {
 		return "", err
 	}
-
-	valid := utils.CheckPasswordHash(password, user.HashedPassword)
-	if !valid {
-		return "", customerrors.ErrPasswordIncorrect
-	}
-
 	return utils.EncodeJWT(user.ID)
 }
 

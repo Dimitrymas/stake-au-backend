@@ -25,6 +25,11 @@ type Service interface {
 		ctx context.Context,
 		userID primitive.ObjectID,
 	) ([]*models.Account, error)
+	Edit(
+		ctx context.Context,
+		userID primitive.ObjectID,
+		account *accountrequests.Edit,
+	) error
 }
 
 type service struct {
@@ -129,4 +134,12 @@ func (s *service) CreateMany(
 		return customerrors.NewPartialAccountsError(created, notCreated)
 	}
 	return nil
+}
+
+func (s *service) Edit(
+	ctx context.Context,
+	userID primitive.ObjectID,
+	account *accountrequests.Edit,
+) error {
+	return s.repo.Edit(ctx, userID, account)
 }

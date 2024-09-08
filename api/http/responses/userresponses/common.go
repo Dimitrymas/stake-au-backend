@@ -18,24 +18,30 @@ func InvalidCredentials() fiber.Map {
 	}
 }
 
-func LoginAlreadyExists() fiber.Map {
+func MnemonicAlreadyExists() fiber.Map {
 	return fiber.Map{
-		"error": "User with this login already exists",
+		"error": "User with this mnemonic already exists",
 	}
 }
 
-func Me(userID *models.User) fiber.Map {
+func Me(userObj *models.User) fiber.Map {
 	data := fiber.Map{
-		"id":          userID.ID.Hex(),
-		"login":       userID.Login,
-		"subStart":    userID.SubStart,
-		"subEnd":      userID.SubEnd,
-		"maxAccounts": userID.MaxAccounts,
+		"id":          userObj.ID.Hex(),
+		"subStart":    userObj.SubStart,
+		"subEnd":      userObj.SubEnd,
+		"maxAccounts": userObj.MaxAccounts,
 	}
-	sign, errResponse := utils.SignData(data)
-	if errResponse != nil {
-		return errResponse
+	return utils.SignData(data)
+}
+
+func Mnemonic(mnemonic []string) fiber.Map {
+	return fiber.Map{
+		"mnemonic": mnemonic,
 	}
-	data["sign"] = sign
-	return data
+}
+
+func InvalidMnemonic() fiber.Map {
+	return fiber.Map{
+		"error": "Invalid mnemonic",
+	}
 }

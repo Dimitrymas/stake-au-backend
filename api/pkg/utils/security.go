@@ -15,7 +15,9 @@ import (
 	"encoding/pem"
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	"github.com/tyler-smith/go-bip39"
 	"io/ioutil"
+	"strings"
 )
 
 var (
@@ -51,11 +53,11 @@ func init() {
 }
 
 // SignData Функция для подписания данных
-func SignData(data interface{}) (string, fiber.Map) {
+func SignData(data fiber.Map) fiber.Map {
 	// Преобразуем данные в байтовый массив
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
-		return "", fiber.Map{
+		return fiber.Map{
 			"error": "Failed to marshal data",
 		}
 	}
@@ -65,11 +67,17 @@ func SignData(data interface{}) (string, fiber.Map) {
 	// Подписываем хеш с использованием приватного ключа
 	signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA256, hashed[:])
 	if err != nil {
-		return "", fiber.Map{
+		return fiber.Map{
 			"error": "Failed to sign data",
 		}
 	}
 
-	// Возвращаем подпись в виде строки base64
-	return base64.StdEncoding.EncodeToString(signature), nil
+	signB64 := base64.StdEncoding.EncodeToString(signature)
+	data["sign"] = signB64
+
+	return data
+}
+
+func ValidateMnemonic(mnemonic []string) bool {
+	return bip39.IsMnemonicValid(strings.Join(mnemonic, " "))
 }

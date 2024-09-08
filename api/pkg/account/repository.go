@@ -2,6 +2,7 @@ package account
 
 import (
 	"backend/api/http/requests/accountrequests"
+	"backend/api/pkg/customerrors"
 	"backend/api/pkg/models"
 	"backend/api/pkg/utils"
 	"context"
@@ -23,6 +24,7 @@ type Repository interface {
 		userID primitive.ObjectID,
 		accounts []*accountrequests.Create,
 	) error
+	Edit(ctx context.Context, accountID primitive.ObjectID, account *accountrequests.Edit) error
 }
 
 type repository struct {
@@ -96,4 +98,29 @@ func (r *repository) CreateMany(
 	_, err := r.collection.InsertMany(ctx, accountsData)
 
 	return err
+}
+
+func (r *repository) Edit(ctx context.Context, userID primitive.ObjectID, account *accountrequests.Edit) error {
+	filter := bson.M{"_id": account.ID, "user_id": userID}
+	update := bson.M{
+		"$set": bson.M{
+			"token":       account.Token,
+			"proxy_type":  account.ProxyType,
+			"proxy_login": account.ProxyLogin,
+			"proxy_pass":  account.ProxyPass,
+			"proxy_ip":    account.ProxyIP,
+			"proxy_port":  account.ProxyPort,
+		},
+	}
+	res, err := r.collection.UpdateOne(ctx, filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return customerrors.ErrAccountNotFound
+	}
+
+	return nil
 }

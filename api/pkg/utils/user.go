@@ -3,8 +3,10 @@ package utils
 import (
 	"backend/api/pkg/config"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/tyler-smith/go-bip39"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
+	"strings"
 )
 
 type JWTClaims struct {
@@ -58,4 +60,23 @@ func CheckPasswordHash(password, hash string) bool {
 	// Сравниваем пароль с хэшем
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+
+// GenerateMnemonic Функция для генерации мнемонической фразы
+func GenerateMnemonic() ([]string, error) {
+	// Генерируем мнемоническую фразу
+	entropy, err := bip39.NewEntropy(128)
+	if err != nil {
+		return nil, err
+	}
+	mnemonic, err := bip39.NewMnemonic(entropy)
+	if err != nil {
+		return nil, err
+	}
+	return strings.Split(mnemonic, " "), nil
+}
+
+// MnemonicToSeed Функция для преобразования мнемонической фразы в seed
+func MnemonicToSeed(mnemonic []string) string {
+	return string(bip39.NewSeed(strings.Join(mnemonic, " "), ""))
 }
