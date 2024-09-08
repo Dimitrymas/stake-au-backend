@@ -12,3 +12,10 @@ services:
       - ./data:/data/db
     ports:
       - "27017:27017"
+  stake-backend:
+    image: dfygs8dufghsdf/fgsd9f6ws7f96s-saub
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "80:3000"
