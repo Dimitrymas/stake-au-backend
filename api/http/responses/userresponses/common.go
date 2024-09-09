@@ -28,8 +28,8 @@ func MnemonicAlreadyExists() fiber.Map {
 func Me(userObj *models.User) fiber.Map {
 	data := fiber.Map{
 		"id":          userObj.ID.Hex(),
-		"subStart":    userObj.SubStart,
-		"subEnd":      userObj.SubEnd,
+		"subStart":    userObj.SubStart.Time().Unix(),
+		"subEnd":      userObj.SubEnd.Time().Unix(),
 		"maxAccounts": userObj.MaxAccounts,
 	}
 	return utils.SignData(data, userObj.PrivateKey)
