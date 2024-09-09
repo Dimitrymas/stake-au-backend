@@ -5,6 +5,7 @@ import (
 	"backend/api/http/handlers/activation"
 	"backend/api/http/handlers/promocode"
 	"backend/api/http/handlers/user"
+	middleware "backend/api/http/middlewares"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -15,7 +16,7 @@ func Router(
 	activationHandler activation.CommonHandler,
 	accountHandler account.CommonHandler,
 ) fiber.Router {
-	router := app.Group("/api")
+	router := app.Group("/api", middleware.ErrorHandler)
 
 	UserRouter(router, userHandler)
 	PromoCodeRouter(router, promoCodeHandler)

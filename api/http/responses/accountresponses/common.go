@@ -44,7 +44,7 @@ func GetAccount(account *models.Account) fiber.Map {
 	}
 }
 
-func Get(accounts []*models.Account) fiber.Map {
+func Get(accounts []*models.Account, privateKeyEnc string) fiber.Map {
 	result := make([]fiber.Map, 0, len(accounts))
 	for _, account := range accounts {
 		result = append(result, GetAccount(account))
@@ -52,7 +52,7 @@ func Get(accounts []*models.Account) fiber.Map {
 	data := fiber.Map{
 		"accounts": result,
 	}
-	return utils.SignData(data)
+	return utils.SignData(data, privateKeyEnc)
 }
 
 func NotFound() fiber.Map {

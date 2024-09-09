@@ -13,7 +13,7 @@ import (
 )
 
 type Repository interface {
-	Register(ctx context.Context, seed string) (primitive.ObjectID, error)
+	Register(ctx context.Context, seed string, privateKey string, publicKey string) (primitive.ObjectID, error)
 	GetByID(ctx context.Context, id primitive.ObjectID) (*models.User, error)
 	GetBySeed(ctx context.Context, seed string) (*models.User, error)
 }
@@ -31,12 +31,16 @@ func NewRepository(collection *mongo.Collection) Repository {
 func (r *repository) Register(
 	ctx context.Context,
 	seed string,
+	privateKey string,
+	publicKey string,
 ) (primitive.ObjectID, error) {
 	user := models.User{
 		Seed:        seed,
 		SubStart:    0,
 		SubEnd:      primitive.NewDateTimeFromTime(time.Now().AddDate(0, 1, 0)),
 		MaxAccounts: 0,
+		PrivateKey:  privateKey,
+		PublicKey:   publicKey,
 		CreatedAt:   utils.GetDateTime(),
 	}
 	// Выполняем вставку нового пользователя

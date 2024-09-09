@@ -6,9 +6,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func Auth(token string) fiber.Map {
+func Auth(token string, publicKey string) fiber.Map {
 	return fiber.Map{
-		"token": token,
+		"token":     token,
+		"publicKey": publicKey,
 	}
 }
 
@@ -31,7 +32,7 @@ func Me(userObj *models.User) fiber.Map {
 		"subEnd":      userObj.SubEnd,
 		"maxAccounts": userObj.MaxAccounts,
 	}
-	return utils.SignData(data)
+	return utils.SignData(data, userObj.PrivateKey)
 }
 
 func Mnemonic(mnemonic []string) fiber.Map {
@@ -43,5 +44,11 @@ func Mnemonic(mnemonic []string) fiber.Map {
 func InvalidMnemonic() fiber.Map {
 	return fiber.Map{
 		"error": "Invalid mnemonic",
+	}
+}
+
+func AlreadyAuthenticated() fiber.Map {
+	return fiber.Map{
+		"error": "Already authenticated",
 	}
 }

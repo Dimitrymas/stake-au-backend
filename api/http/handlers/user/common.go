@@ -32,6 +32,9 @@ func NewCommonHandler(
 }
 
 func (h *commonHandler) GenerateMnemonic(ctx *fiber.Ctx) error {
+	if ctx.Locals("userID") != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(userresponses.AlreadyAuthenticated())
+	}
 	mnemonic, err := utils.GenerateMnemonic()
 	if err != nil {
 		return err
@@ -45,10 +48,10 @@ func (h *commonHandler) Register(ctx *fiber.Ctx) error {
 		return nil
 	}
 
-	token, err := h.service.Register(ctx.Context(), data.Mnemonic)
+	token, publicKey, err := h.service.Register(ctx.Context(), data.Mnemonic)
 	switch {
 	case err == nil:
-		return ctx.JSON(userresponses.Auth(token))
+		return ctx.JSON(userresponses.Auth(token, publicKey))
 	case errors.Is(err, customerrors.ErrUserAlreadyExists):
 		return ctx.Status(fiber.StatusConflict).JSON(userresponses.MnemonicAlreadyExists())
 	case errors.Is(err, customerrors.ErrInvalidMnemonic):
@@ -64,10 +67,10 @@ func (h *commonHandler) Login(ctx *fiber.Ctx) error {
 		return nil
 	}
 
-	token, err := h.service.Login(ctx.Context(), data.Mnemonic)
+	token, publicKey, err := h.service.Login(ctx.Context(), data.Mnemonic)
 	switch {
 	case err == nil:
-		return ctx.JSON(userresponses.Auth(token))
+		return ctx.JSON(userresponses.Auth(token, publicKey))
 	case errors.Is(err, customerrors.ErrUserNotFound):
 		return ctx.Status(fiber.StatusUnauthorized).JSON(userresponses.InvalidCredentials())
 	case errors.Is(err, customerrors.ErrInvalidMnemonic):

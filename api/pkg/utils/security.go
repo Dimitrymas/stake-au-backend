@@ -14,14 +14,8 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/tyler-smith/go-bip39"
-	"io/ioutil"
-	"strings"
-)
-
-var (
-	privateKey *rsa.PrivateKey
 )
 
 func OxapaySign(callback []byte) string {
@@ -30,30 +24,14 @@ func OxapaySign(callback []byte) string {
 	return hex.EncodeToString(hmacObj.Sum(nil))
 }
 
-// Загрузка приватного ключа
-func loadPrivateKey(filename string) error {
-	keyData, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-
-	block, _ := pem.Decode(keyData)
-	if block == nil || block.Type != "RSA PRIVATE KEY" {
-		return errors.New("failed to decode PEM block containing private key")
-	}
-
-	privateKey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
-	return err
-}
-
-func init() {
-	if err := loadPrivateKey("certs/private.pem"); err != nil {
-		panic(err)
-	}
-}
-
 // SignData Функция для подписания данных
-func SignData(data fiber.Map) fiber.Map {
+func SignData(data fiber.Map, privateKeyEnc string) fiber.Map {
+	privateKey, err := LoadPrivateKey(privateKeyEnc)
+	if err != nil {
+		return fiber.Map{
+			"error": "Failed to load private key",
+		}
+	}
 	// Преобразуем данные в байтовый массив
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
@@ -78,6 +56,58 @@ func SignData(data fiber.Map) fiber.Map {
 	return data
 }
 
-func ValidateMnemonic(mnemonic []string) bool {
-	return bip39.IsMnemonicValid(strings.Join(mnemonic, " "))
+// LoadPrivateKey Функция для загрузки приватного ключа
+func LoadPrivateKey(privateKeyStr string) (*rsa.PrivateKey, error) {
+	// Декодируем base64 строку
+	privateKeyPem, err := base64.StdEncoding.DecodeString(privateKeyStr)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding base64 private key: %v", err)
+	}
+
+	// Декодируем PEM блок
+	block, _ := pem.Decode(privateKeyPem)
+	if block == nil {
+		return nil, errors.New("error decoding PEM block: PEM block is nil")
+	}
+
+	// Парсим приватный ключ PKCS1
+	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing PKCS1 private key: %v", err)
+	}
+
+	return privateKey, nil
+}
+
+// GenerateKeyPair Функция для генерации пары ключей
+func GenerateKeyPair(bits int) (*rsa.PrivateKey, *rsa.PublicKey, error) {
+	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
+	if err != nil {
+		return nil, nil, err
+	}
+	publicKey := &privateKey.PublicKey
+	return privateKey, publicKey, nil
+}
+
+// PrivateKeyToString Функция для конвертации приватного ключа в строку (PEM формат)
+func PrivateKeyToString(privateKey *rsa.PrivateKey) string {
+	privateKeyBytes := x509.MarshalPKCS1PrivateKey(privateKey)
+	privatePem := pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: privateKeyBytes,
+	})
+	return base64.StdEncoding.EncodeToString(privatePem)
+}
+
+// PublicKeyToString Функция для конвертации публичного ключа в строку (PEM формат)
+func PublicKeyToString(pubkey *rsa.PublicKey) (string, error) {
+	pubKeyBytes, err := x509.MarshalPKIXPublicKey(pubkey)
+	if err != nil {
+		return "", err
+	}
+	publicPem := pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PUBLIC KEY",
+		Bytes: pubKeyBytes,
+	})
+	return base64.StdEncoding.EncodeToString(publicPem), nil
 }

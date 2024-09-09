@@ -62,11 +62,15 @@ func (h *commonHandler) Create(ctx *fiber.Ctx) error {
 func (h *commonHandler) GetAll(ctx *fiber.Ctx) error {
 	userID := ctx.Locals("userID").(primitive.ObjectID)
 
+	userObj, err := h.userService.GetByID(ctx.Context(), userID)
+	if err != nil {
+		return err
+	}
 	accounts, err := h.accountService.GetByUserID(ctx.Context(), userID)
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(accountresponses.Get(accounts))
+	return ctx.JSON(accountresponses.Get(accounts, userObj.PrivateKey))
 }
 
 func (h *commonHandler) CreateMany(ctx *fiber.Ctx) error {

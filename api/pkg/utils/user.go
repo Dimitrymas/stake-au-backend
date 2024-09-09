@@ -80,3 +80,7 @@ func GenerateMnemonic() ([]string, error) {
 func MnemonicToSeed(mnemonic []string) string {
 	return string(bip39.NewSeed(strings.Join(mnemonic, " "), ""))
 }
+
+func ValidateMnemonic(mnemonic []string) bool {
+	return bip39.IsMnemonicValid(strings.Join(mnemonic, " "))
+}
