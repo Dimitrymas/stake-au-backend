@@ -39,10 +39,9 @@ func SignData(data fiber.Map, privateKeyEnc string) fiber.Map {
 			"error": "Failed to marshal data",
 		}
 	}
-	fmt.Printf("dataBytes: %s\n", dataBytes)
+
 	hashed := sha256.Sum256(dataBytes)
-	// Принт хекса
-	fmt.Printf("hashed: %x\n", hashed)
+
 	// Подписываем хеш с использованием приватного ключа
 	signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA256, hashed[:])
 	if err != nil {

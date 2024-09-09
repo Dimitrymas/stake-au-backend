@@ -7,6 +7,7 @@ import (
 	accountPkg "backend/api/pkg/account"
 	"backend/api/pkg/customerrors"
 	userPkg "backend/api/pkg/user"
+	"backend/api/pkg/utils"
 	"errors"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -65,6 +66,9 @@ func (h *commonHandler) GetAll(ctx *fiber.Ctx) error {
 	userObj, err := h.userService.GetByID(ctx.Context(), userID)
 	if err != nil {
 		return err
+	}
+	if userObj.SubEnd < utils.GetDateTime() {
+		return ctx.Status(fiber.StatusForbidden).JSON(accountresponses.SubNotActive())
 	}
 	accounts, err := h.accountService.GetByUserID(ctx.Context(), userID)
 	if err != nil {

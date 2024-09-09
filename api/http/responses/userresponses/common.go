@@ -7,10 +7,11 @@ import (
 )
 
 func Auth(token string, publicKey string) fiber.Map {
-	return fiber.Map{
+	data := fiber.Map{
 		"token":     token,
 		"publicKey": publicKey,
 	}
+	return utils.SignData(data, publicKey)
 }
 
 func InvalidCredentials() fiber.Map {
