@@ -72,11 +72,11 @@ func (h *commonHandler) Login(ctx *fiber.Ctx) error {
 	case err == nil:
 		return ctx.JSON(userresponses.Auth(token, publicKey, privateKey))
 	case errors.Is(err, customerrors.ErrUserNotFound):
-		return ctx.Status(fiber.StatusUnauthorized).JSON(userresponses.InvalidCredentials())
+		return ctx.Status(fiber.StatusBadRequest).JSON(userresponses.InvalidCredentials())
 	case errors.Is(err, customerrors.ErrInvalidMnemonic):
-		return ctx.Status(fiber.StatusUnauthorized).JSON(userresponses.InvalidCredentials())
+		return ctx.Status(fiber.StatusBadRequest).JSON(userresponses.InvalidCredentials())
 	case errors.Is(err, customerrors.ErrPasswordIncorrect):
-		return ctx.Status(fiber.StatusUnauthorized).JSON(userresponses.InvalidCredentials())
+		return ctx.Status(fiber.StatusBadRequest).JSON(userresponses.InvalidCredentials())
 	default:
 		return err
 	}

@@ -38,7 +38,7 @@ func (r *repository) Register(
 		Seed:        seed,
 		SubStart:    0,
 		SubEnd:      primitive.NewDateTimeFromTime(time.Now().AddDate(0, 1, 0)),
-		MaxAccounts: 0,
+		MaxAccounts: 3,
 		PrivateKey:  privateKey,
 		PublicKey:   publicKey,
 		CreatedAt:   utils.GetDateTime(),

@@ -16,6 +16,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"strings"
 )
 
 func OxapaySign(callback []byte) string {
@@ -109,5 +110,8 @@ func PublicKeyToString(pubkey *rsa.PublicKey) (string, error) {
 		Type:  "PUBLIC KEY", // Исправлено
 		Bytes: pubKeyBytes,
 	})
-	return base64.StdEncoding.EncodeToString(publicPem), nil
+	publicPemStr := strings.Replace(strings.Replace(string(publicPem), "-----BEGIN PUBLIC KEY-----\n", "", 1), "\n-----END PUBLIC KEY-----", "", 1)
+	publicPemStr = strings.Replace(publicPemStr, "\n", "", -1)
+	publicPemStr = strings.Replace(publicPemStr, "\r", "", -1)
+	return publicPemStr, nil
 }
