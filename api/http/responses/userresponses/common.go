@@ -6,12 +6,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func Auth(token string, publicKey string) fiber.Map {
+func Auth(token string, publicKey string, privateKey string) fiber.Map {
 	data := fiber.Map{
 		"token":     token,
 		"publicKey": publicKey,
 	}
-	return utils.SignData(data, publicKey)
+	return utils.SignData(data, privateKey)
 }
 
 func InvalidCredentials() fiber.Map {

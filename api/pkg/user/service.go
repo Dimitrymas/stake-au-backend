@@ -10,8 +10,8 @@ import (
 )
 
 type Service interface {
-	Register(ctx context.Context, mnemonic []string) (string, string, error)
-	Login(ctx context.Context, mnemonic []string) (string, string, error)
+	Register(ctx context.Context, mnemonic []string) (string, string, string, error)
+	Login(ctx context.Context, mnemonic []string) (string, string, string, error)
 	GetByID(ctx context.Context, id primitive.ObjectID) (*models.User, error)
 }
 
@@ -27,53 +27,53 @@ func NewService(
 	}
 }
 
-func (s *service) Register(ctx context.Context, mnemonic []string) (string, string, error) {
+func (s *service) Register(ctx context.Context, mnemonic []string) (string, string, string, error) {
 	if !utils.ValidateMnemonic(mnemonic) {
-		return "", "", customerrors.ErrInvalidMnemonic
+		return "", "", "", customerrors.ErrInvalidMnemonic
 	}
 	seed := utils.MnemonicToSeed(mnemonic)
 	_, err := s.repo.GetBySeed(ctx, seed)
 	if err == nil {
-		return "", "", customerrors.ErrUserAlreadyExists
+		return "", "", "", customerrors.ErrUserAlreadyExists
 	} else if !errors.Is(err, customerrors.ErrUserNotFound) {
-		return "", "", err
+		return "", "", "", err
 	}
 	privateKey, publicKey, err := utils.GenerateKeyPair(2048)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 	privateKeyEncrypted := utils.PrivateKeyToString(privateKey)
 	publicKeyEncrypted, err := utils.PublicKeyToString(publicKey)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 	userID, err := s.repo.Register(ctx, seed, privateKeyEncrypted, publicKeyEncrypted)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 
 	jwtToken, err := utils.EncodeJWT(userID)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 
-	return jwtToken, publicKeyEncrypted, nil
+	return jwtToken, publicKeyEncrypted, privateKeyEncrypted, nil
 }
 
-func (s *service) Login(ctx context.Context, mnemonic []string) (string, string, error) {
+func (s *service) Login(ctx context.Context, mnemonic []string) (string, string, string, error) {
 	if !utils.ValidateMnemonic(mnemonic) {
-		return "", "", customerrors.ErrInvalidMnemonic
+		return "", "", "", customerrors.ErrInvalidMnemonic
 	}
 	seed := utils.MnemonicToSeed(mnemonic)
 	user, err := s.repo.GetBySeed(ctx, seed)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 	jwtToken, err := utils.EncodeJWT(user.ID)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
-	return jwtToken, user.PublicKey, nil
+	return jwtToken, user.PublicKey, user.PrivateKey, nil
 }
 
 func (s *service) GetByID(ctx context.Context, id primitive.ObjectID) (*models.User, error) {

@@ -12,6 +12,8 @@ import (
 	userPkg "backend/api/pkg/user"
 	"backend/api/pkg/utils"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"log"
 )
 
@@ -44,6 +46,9 @@ func main() {
 	promocodeCommonHandler := promocode.NewCommonHandler(promocodeService)
 
 	app := fiber.New()
+	app.Use(cors.New())
+	app.Use(helmet.New())
+
 	routes.Router(
 		app,
 		userCommonHandler,

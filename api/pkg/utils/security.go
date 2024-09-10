@@ -41,7 +41,7 @@ func SignData(data fiber.Map, privateKeyEnc string) fiber.Map {
 	}
 
 	hashed := sha256.Sum256(dataBytes)
-
+	fmt.Printf("%x\n", hashed)
 	// Подписываем хеш с использованием приватного ключа
 	signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA256, hashed[:])
 	if err != nil {
