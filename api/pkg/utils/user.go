@@ -2,6 +2,8 @@ package utils
 
 import (
 	"backend/api/pkg/config"
+	"crypto/sha256"
+	"encoding/hex"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/tyler-smith/go-bip39"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -76,11 +78,19 @@ func GenerateMnemonic() ([]string, error) {
 	return strings.Split(mnemonic, " "), nil
 }
 
-// MnemonicToSeed Функция для преобразования мнемонической фразы в seed
+// MnemonicToSeed преобразует мнемоническую фразу в seed и возвращает 256-битный хэш
 func MnemonicToSeed(mnemonic []string) string {
-	return string(bip39.NewSeed(strings.Join(mnemonic, " "), ""))
-}
+	// Преобразуем мнемоническую фразу в seed
+	seed := bip39.NewSeed(strings.Join(mnemonic, " "), "")
 
+	// Хэшируем seed с использованием SHA-256
+	hash := sha256.New()
+	hash.Write(seed)
+	hashedSeed := hash.Sum(nil)
+
+	// Возвращаем хэш в виде строки
+	return hex.EncodeToString(hashedSeed)
+}
 func ValidateMnemonic(mnemonic []string) bool {
 	return bip39.IsMnemonicValid(strings.Join(mnemonic, " "))
 }
