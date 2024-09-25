@@ -13,7 +13,7 @@ func GetWithPromoCode(activation *dtos.Activation) fiber.Map {
 	}
 	return fiber.Map{
 		"id":        activation.ID.Hex(),
-		"promoCode": promocoderesponses.Get(activation.PromoCode),
+		"promocode": promocoderesponses.Get(activation.PromoCode),
 		"succeeded": activation.Succeeded,
 		"duration":  activation.Duration,
 		"error":     activation.Error,
@@ -24,7 +24,7 @@ func GetWithPromoCode(activation *dtos.Activation) fiber.Map {
 func Get(activation *models.Activation) fiber.Map {
 	return fiber.Map{
 		"id":          activation.ID.Hex(),
-		"promoCodeID": activation.PromoCodeID.Hex(),
+		"promocodeID": activation.PromoCodeID.Hex(),
 		"accountID":   activation.AccountID.Hex(),
 		"succeeded":   activation.Succeeded,
 		"duration":    activation.Duration,

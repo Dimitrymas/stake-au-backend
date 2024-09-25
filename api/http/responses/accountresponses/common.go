@@ -34,16 +34,16 @@ func SubNotActive() fiber.Map {
 
 func GetAccount(account *dtos.Account) fiber.Map {
 	return fiber.Map{
-		"id":              account.ID.Hex(),
-		"token":           account.Token,
-		"proxy_type":      account.ProxyType,
-		"proxy_login":     account.ProxyLogin,
-		"proxy_pass":      account.ProxyPass,
-		"proxy_ip":        account.ProxyIP,
-		"proxy_port":      account.ProxyPort,
-		"proxy":           account.Proxy,
-		"last_activation": activationresponses.GetWithPromoCode(account.LastActivation),
-		"created_at":      account.CreatedAt,
+		"id":             account.ID.Hex(),
+		"token":          account.Token,
+		"proxyType":      account.ProxyType,
+		"proxyLogin":     account.ProxyLogin,
+		"proxyPass":      account.ProxyPass,
+		"proxyIP":        account.ProxyIP,
+		"proxy_port":     account.ProxyPort,
+		"proxy":          account.Proxy,
+		"lastActivation": activationresponses.GetWithPromoCode(account.LastActivation),
+		"createdAt":      account.CreatedAt,
 	}
 }
 
