@@ -30,11 +30,6 @@ func main() {
 	userService := userPkg.NewService(userRepository)
 	userCommonHandler := user.NewCommonHandler(userService)
 
-	accountCollection := db.Collection("accounts")
-	accountRepository := accountPkg.NewRepository(accountCollection)
-	accountService := accountPkg.NewService(accountRepository)
-	accountCommonHandler := account.NewCommonHandler(accountService, userService)
-
 	activationCollection := db.Collection("activations")
 	activationRepository := activationPkg.NewRepository(activationCollection)
 	activationService := activationPkg.NewService(activationRepository)
@@ -44,6 +39,11 @@ func main() {
 	promocodeRepository := promoCodePkg.NewRepository(promocodeCollection)
 	promocodeService := promoCodePkg.NewService(promocodeRepository, activationService)
 	promocodeCommonHandler := promocode.NewCommonHandler(promocodeService)
+
+	accountCollection := db.Collection("accounts")
+	accountRepository := accountPkg.NewRepository(accountCollection)
+	accountService := accountPkg.NewService(accountRepository, userService, promocodeService, activationService)
+	accountCommonHandler := account.NewCommonHandler(accountService, userService)
 
 	app := fiber.New()
 	app.Use(cors.New())

@@ -6,6 +6,7 @@ import (
 	validation "backend/api/http/validator"
 	accountPkg "backend/api/pkg/account"
 	"backend/api/pkg/customerrors"
+	promoCodePkg "backend/api/pkg/promocode"
 	userPkg "backend/api/pkg/user"
 	"backend/api/pkg/utils"
 	"errors"
@@ -21,8 +22,9 @@ type CommonHandler interface {
 }
 
 type commonHandler struct {
-	accountService accountPkg.Service
-	userService    userPkg.Service
+	accountService   accountPkg.Service
+	userService      userPkg.Service
+	promoCodeService promoCodePkg.Service
 }
 
 func NewCommonHandler(

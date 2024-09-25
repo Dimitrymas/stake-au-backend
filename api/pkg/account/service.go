@@ -2,11 +2,15 @@ package account
 
 import (
 	"backend/api/http/requests/accountrequests"
+	activationPkg "backend/api/pkg/activation"
 	"backend/api/pkg/customerrors"
+	"backend/api/pkg/dtos"
 	"backend/api/pkg/models"
+	promoCodePkg "backend/api/pkg/promocode"
 	"backend/api/pkg/user"
 	"backend/api/pkg/utils"
 	"context"
+	"errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -24,7 +28,7 @@ type Service interface {
 	GetByUserID(
 		ctx context.Context,
 		userID primitive.ObjectID,
-	) ([]*models.Account, error)
+	) ([]*dtos.Account, error)
 	Edit(
 		ctx context.Context,
 		userID primitive.ObjectID,
@@ -33,15 +37,23 @@ type Service interface {
 }
 
 type service struct {
-	repo        Repository
-	userService user.Service
+	repo              Repository
+	userService       user.Service
+	promoCodeService  promoCodePkg.Service
+	activationService activationPkg.Service
 }
 
 func NewService(
 	repository Repository,
+	userService user.Service,
+	promoCodeService promoCodePkg.Service,
+	activationService activationPkg.Service,
 ) Service {
 	return &service{
-		repo: repository,
+		repo:              repository,
+		userService:       userService,
+		promoCodeService:  promoCodeService,
+		activationService: activationService,
 	}
 }
 
@@ -91,8 +103,30 @@ func (s *service) Create(
 func (s *service) GetByUserID(
 	ctx context.Context,
 	userID primitive.ObjectID,
-) ([]*models.Account, error) {
-	return s.repo.GetByUserID(ctx, userID)
+) ([]*dtos.Account, error) {
+	accounts, err := s.repo.GetByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	var accountDtos []*dtos.Account
+	for _, account := range accounts {
+		lastActivation, err := s.getActivationForAccount(ctx, account.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		proxyString := utils.BuildAccountProxyString(account)
+
+		accountDto := &dtos.Account{
+			Account:        *account,
+			Proxy:          proxyString,
+			LastActivation: lastActivation,
+		}
+		accountDtos = append(accountDtos, accountDto)
+	}
+
+	return accountDtos, nil
 }
 
 func (s *service) CreateMany(
@@ -142,4 +176,27 @@ func (s *service) Edit(
 	account *accountrequests.Edit,
 ) error {
 	return s.repo.Edit(ctx, userID, account)
+}
+
+func (s *service) getActivationForAccount(
+	ctx context.Context,
+	accountID primitive.ObjectID,
+) (*dtos.Activation, error) {
+	lastActivation, err := s.activationService.GetLastByAccountID(ctx, accountID)
+	if err != nil {
+		if errors.Is(err, customerrors.ErrActivationNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	promoCode, err := s.promoCodeService.GetByID(ctx, lastActivation.PromoCodeID)
+	if err != nil && !errors.Is(err, customerrors.ErrPromoCodeNotFound) {
+		return nil, err
+	}
+
+	return &dtos.Activation{
+		Activation: *lastActivation,
+		PromoCode:  promoCode,
+	}, nil
 }

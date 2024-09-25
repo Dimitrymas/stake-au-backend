@@ -44,6 +44,7 @@ func (r *repository) Create(
 ) error {
 	account := models.Account{
 		UserID:     userID,
+		Name:       requestData.Name,
 		Token:      requestData.Token,
 		ProxyType:  requestData.ProxyType,
 		ProxyLogin: requestData.ProxyLogin,
@@ -85,6 +86,7 @@ func (r *repository) CreateMany(
 	for _, account := range accounts {
 		accountsData = append(accountsData, models.Account{
 			UserID:     userID,
+			Name:       account.Name,
 			Token:      account.Token,
 			ProxyType:  account.ProxyType,
 			ProxyLogin: account.ProxyLogin,

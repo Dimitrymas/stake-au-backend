@@ -1,13 +1,23 @@
 package activationresponses
 
 import (
+	"backend/api/http/responses/promocoderesponses"
+	"backend/api/pkg/dtos"
 	"backend/api/pkg/models"
 	"github.com/gofiber/fiber/v2"
 )
 
-func Created() fiber.Map {
+func GetWithPromoCode(activation *dtos.Activation) fiber.Map {
+	if activation == nil {
+		return nil
+	}
 	return fiber.Map{
-		"message": "activation created",
+		"id":        activation.ID.Hex(),
+		"promoCode": promocoderesponses.Get(activation.PromoCode),
+		"succeeded": activation.Succeeded,
+		"duration":  activation.Duration,
+		"error":     activation.Error,
+		"createdAt": activation.CreatedAt,
 	}
 }
 

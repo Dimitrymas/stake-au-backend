@@ -14,6 +14,7 @@ import (
 type Service interface {
 	Create(ctx context.Context, name string, value float64, description string) (primitive.ObjectID, error)
 	GetAll(ctx context.Context) ([]*models.PromoCode, error)
+	GetByID(ctx context.Context, id primitive.ObjectID) (*models.PromoCode, error)
 }
 
 type service struct {
@@ -51,4 +52,8 @@ func (s *service) GetAll(ctx context.Context) ([]*models.PromoCode, error) {
 	ids = utils.RemoveDuplicates(ids)
 
 	return s.repository.GetByIDs(ctx, ids)
+}
+
+func (s *service) GetByID(ctx context.Context, id primitive.ObjectID) (*models.PromoCode, error) {
+	return s.repository.GetByID(ctx, id)
 }

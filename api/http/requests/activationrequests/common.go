@@ -6,11 +6,11 @@ import (
 )
 
 type Create struct {
-	AccountID   primitive.ObjectID `json:"account_id" validate:"required"`
-	PromoCodeID primitive.ObjectID `json:"promocode_id" validate:"required"`
+	AccountID   primitive.ObjectID `json:"accountID" validate:"required"`
+	PromoCodeID primitive.ObjectID `json:"promocodeID" validate:"required"`
 	Succeeded   bool               `json:"succeeded" validate:"required"`
 	Duration    time.Duration      `json:"duration" validate:"required"`
-	Error       string             `json:"error" validate:"required"`
+	Error       string             `json:"error" validate:""`
 }
 
 type CreateMany struct {

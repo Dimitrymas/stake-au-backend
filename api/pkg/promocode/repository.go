@@ -15,6 +15,7 @@ type Repository interface {
 	Create(ctx context.Context, name string, value float64, description string) (primitive.ObjectID, error)
 	GetByName(ctx context.Context, name string) (*models.PromoCode, error)
 	GetByIDs(ctx context.Context, ids []primitive.ObjectID) ([]*models.PromoCode, error)
+	GetByID(ctx context.Context, id primitive.ObjectID) (*models.PromoCode, error)
 }
 
 type repository struct {
@@ -69,4 +70,14 @@ func (r *repository) GetByIDs(ctx context.Context, ids []primitive.ObjectID) ([]
 		return nil, err
 	}
 	return promoCodes, nil
+}
+
+func (r *repository) GetByID(ctx context.Context, id primitive.ObjectID) (*models.PromoCode, error) {
+	promoCode := new(models.PromoCode)
+	filter := bson.M{"_id": id}
+	err := r.collection.FindOne(ctx, filter).Decode(promoCode)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return nil, customerrors.ErrPromoCodeNotFound
+	}
+	return promoCode, err
 }

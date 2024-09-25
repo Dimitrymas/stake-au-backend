@@ -1,7 +1,8 @@
 package accountresponses
 
 import (
-	"backend/api/pkg/models"
+	"backend/api/http/responses/activationresponses"
+	"backend/api/pkg/dtos"
 	"backend/api/pkg/utils"
 	"github.com/gofiber/fiber/v2"
 )
@@ -31,20 +32,22 @@ func SubNotActive() fiber.Map {
 	}
 }
 
-func GetAccount(account *models.Account) fiber.Map {
+func GetAccount(account *dtos.Account) fiber.Map {
 	return fiber.Map{
-		"id":          account.ID.Hex(),
-		"token":       account.Token,
-		"proxy_type":  account.ProxyType,
-		"proxy_login": account.ProxyLogin,
-		"proxy_pass":  account.ProxyPass,
-		"proxy_ip":    account.ProxyIP,
-		"proxy_port":  account.ProxyPort,
-		"created_at":  account.CreatedAt,
+		"id":              account.ID.Hex(),
+		"token":           account.Token,
+		"proxy_type":      account.ProxyType,
+		"proxy_login":     account.ProxyLogin,
+		"proxy_pass":      account.ProxyPass,
+		"proxy_ip":        account.ProxyIP,
+		"proxy_port":      account.ProxyPort,
+		"proxy":           account.Proxy,
+		"last_activation": activationresponses.GetWithPromoCode(account.LastActivation),
+		"created_at":      account.CreatedAt,
 	}
 }
 
-func Get(accounts []*models.Account, privateKeyEnc string) fiber.Map {
+func Get(accounts []*dtos.Account, privateKeyEnc string) fiber.Map {
 	result := make([]fiber.Map, 0, len(accounts))
 	for _, account := range accounts {
 		result = append(result, GetAccount(account))

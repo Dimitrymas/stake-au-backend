@@ -8,11 +8,14 @@ import (
 
 func Created(promoID primitive.ObjectID) fiber.Map {
 	return fiber.Map{
-		"promoID": promoID.Hex(),
+		"promocodeID": promoID.Hex(),
 	}
 }
 
 func Get(promoCode *models.PromoCode) fiber.Map {
+	if promoCode == nil {
+		return nil
+	}
 	return fiber.Map{
 		"id":          promoCode.ID.Hex(),
 		"name":        promoCode.Name,
@@ -28,6 +31,6 @@ func GetAll(promoCodes []*models.PromoCode) fiber.Map {
 		response = append(response, Get(promoCode))
 	}
 	return fiber.Map{
-		"promoCodes": response,
+		"promocodes": response,
 	}
 }

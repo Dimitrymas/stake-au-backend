@@ -22,6 +22,7 @@ type Service interface {
 		activations []*activationrequests.Create,
 	) error
 	GetAll(ctx context.Context) ([]*models.Activation, error)
+	GetLastByAccountID(ctx context.Context, accountID primitive.ObjectID) (*models.Activation, error)
 }
 
 type service struct {
@@ -54,4 +55,8 @@ func (s *service) CreateMany(
 
 func (s *service) GetAll(ctx context.Context) ([]*models.Activation, error) {
 	return s.repo.GetAll(ctx)
+}
+
+func (s *service) GetLastByAccountID(ctx context.Context, accountID primitive.ObjectID) (*models.Activation, error) {
+	return s.repo.GetLastByAccountID(ctx, accountID)
 }
