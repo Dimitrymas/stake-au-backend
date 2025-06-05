@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"log"
 	"strings"
 )
 
@@ -33,16 +34,25 @@ func (s *service) Create(ctx context.Context, name string, value float64, descri
 	name = strings.ToUpper(name)
 	promoObj, err := s.repository.GetByName(ctx, name)
 	if err == nil {
+		log.Printf("promocode %s already exists", name)
 		return promoObj.ID, customerrors.ErrPromoCodeExists
 	} else if !errors.Is(err, customerrors.ErrPromoCodeNotFound) {
+		log.Printf("create promocode: failed to get by name: %v", err)
 		return primitive.NilObjectID, err
 	}
-	return s.repository.Create(ctx, name, value, description)
+	id, err := s.repository.Create(ctx, name, value, description)
+	if err != nil {
+		log.Printf("create promocode: repository error: %v", err)
+		return primitive.NilObjectID, err
+	}
+	log.Printf("promocode created: %s", id.Hex())
+	return id, nil
 }
 
 func (s *service) GetAll(ctx context.Context) ([]*models.PromoCode, error) {
 	activations, err := s.activationService.GetAll(ctx)
 	if err != nil {
+		log.Printf("get promocodes: failed to load activations: %v", err)
 		return nil, err
 	}
 	var ids []primitive.ObjectID
@@ -51,9 +61,21 @@ func (s *service) GetAll(ctx context.Context) ([]*models.PromoCode, error) {
 	}
 	ids = utils.RemoveDuplicates(ids)
 
-	return s.repository.GetByIDs(ctx, ids)
+	promoCodes, err := s.repository.GetByIDs(ctx, ids)
+	if err != nil {
+		log.Printf("get promocodes: repository error: %v", err)
+		return nil, err
+	}
+	log.Printf("retrieved %d promocodes", len(promoCodes))
+	return promoCodes, nil
 }
 
 func (s *service) GetByID(ctx context.Context, id primitive.ObjectID) (*models.PromoCode, error) {
-	return s.repository.GetByID(ctx, id)
+	promo, err := s.repository.GetByID(ctx, id)
+	if err != nil {
+		log.Printf("get promocode by id %s: %v", id.Hex(), err)
+		return nil, err
+	}
+	log.Printf("retrieved promocode %s", id.Hex())
+	return promo, nil
 }
