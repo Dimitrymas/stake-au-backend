@@ -20,7 +20,7 @@ import (
 func main() {
 	db, cancel, err := utils.DatabaseConnection()
 	if err != nil {
-		log.Fatal("Database Connection Error $s", err)
+		log.Fatalf("Database Connection Error %s", err)
 	}
 	log.Println("Connected to database")
 	defer cancel()
