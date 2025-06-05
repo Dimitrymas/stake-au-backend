@@ -12,6 +12,7 @@ import (
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"log"
 )
 
 type Service interface {
@@ -90,14 +91,20 @@ func (s *service) Create(
 ) error {
 	_, err := s.checkAccountLimits(ctx, userID)
 	if err != nil {
+		log.Printf("create account: limits check failed: %v", err)
 		return err
 	}
 
-	return s.repo.Create(
+	if err := s.repo.Create(
 		ctx,
 		userID,
 		account,
-	)
+	); err != nil {
+		log.Printf("create account: repository error: %v", err)
+		return err
+	}
+	log.Printf("account created for user %s", userID.Hex())
+	return nil
 }
 
 func (s *service) GetByUserID(
@@ -106,6 +113,7 @@ func (s *service) GetByUserID(
 ) ([]*dtos.Account, error) {
 	accounts, err := s.repo.GetByUserID(ctx, userID)
 	if err != nil {
+		log.Printf("get accounts: repository error: %v", err)
 		return nil, err
 	}
 
@@ -126,6 +134,7 @@ func (s *service) GetByUserID(
 		accountDtos = append(accountDtos, accountDto)
 	}
 
+	log.Printf("retrieved %d accounts for user %s", len(accountDtos), userID.Hex())
 	return accountDtos, nil
 }
 
@@ -136,10 +145,12 @@ func (s *service) CreateMany(
 ) error {
 	userObj, err := s.checkAccountLimits(ctx, userID)
 	if err != nil {
+		log.Printf("create many accounts: limits check failed: %v", err)
 		return err
 	}
 	accountsCount, err := s.repo.CountByUserID(ctx, userID)
 	if err != nil {
+		log.Printf("create many accounts: count error: %v", err)
 		return err
 	}
 
@@ -161,12 +172,15 @@ func (s *service) CreateMany(
 		accountsToCreate,
 	)
 	if err != nil {
+		log.Printf("create many accounts: repository error: %v", err)
 		return err
 	}
 
 	if notCreated > 0 {
+		log.Printf("create many accounts: %d accounts not created due to limits", notCreated)
 		return customerrors.NewPartialAccountsError(created, notCreated)
 	}
+	log.Printf("created %d accounts for user %s", created, userID.Hex())
 	return nil
 }
 
@@ -175,7 +189,12 @@ func (s *service) Edit(
 	userID primitive.ObjectID,
 	account *accountrequests.Edit,
 ) error {
-	return s.repo.Edit(ctx, userID, account)
+	if err := s.repo.Edit(ctx, userID, account); err != nil {
+		log.Printf("edit account %s: %v", account.ID.Hex(), err)
+		return err
+	}
+	log.Printf("account %s edited", account.ID.Hex())
+	return nil
 }
 
 func (s *service) getActivationForAccount(

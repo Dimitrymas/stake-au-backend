@@ -4,6 +4,7 @@ import (
 	"backend/api/http/responses"
 	"backend/api/pkg/utils"
 	"github.com/gofiber/fiber/v2"
+	"log"
 )
 
 func AuthHandler(ctx *fiber.Ctx) error {
@@ -11,6 +12,7 @@ func AuthHandler(ctx *fiber.Ctx) error {
 	token := ctx.Get("Authorization")
 	// If the Authorization header is missing
 	if len(token) < 7 || token[:7] != "Bearer " {
+		log.Println("authorization header missing or invalid")
 		return ctx.Status(fiber.StatusUnauthorized).JSON(responses.Unauthorized())
 	}
 
@@ -20,6 +22,7 @@ func AuthHandler(ctx *fiber.Ctx) error {
 	userID, err := utils.GetUserIdFromToken(token)
 
 	if err != nil {
+		log.Printf("invalid token: %v", err)
 		return ctx.Status(fiber.StatusUnauthorized).JSON(responses.Unauthorized())
 	}
 
